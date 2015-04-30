@@ -15,7 +15,7 @@ app.get('/', function (req, res) {
 });
 
 app.get(/testinitmin.html/gi, function (req, res) {
-    res.render('minerva-ws/widget', {
+    res.render('widget', {
       layout: 'testinitmin'
     });
 });

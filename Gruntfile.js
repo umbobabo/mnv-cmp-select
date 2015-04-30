@@ -50,8 +50,8 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['js/css.js', 'dist/init.min.js'],
-        dest: 'dist/init.min.js',
+        src: ['js/css.js', 'dist/js/init.min.js'],
+        dest: 'dist/js/init.min.js',
       },
       template: {
         src: ['css/inlineStyle.html', 'js/tpl/handlebars/*.*'],
@@ -100,7 +100,7 @@ module.exports = function(grunt) {
         }
     },
     jshint: {
-      //files: ['js/**/*.js', '!dist/init.min.js', '!js/tests/*.js', '!js/tpl/template.js'],
+      //files: ['js/**/*.js', '!dist/js/init.min.js', '!js/tests/*.js', '!js/tpl/template.js'],
       files: ['js/init.js'],
       options: {
         camelcase: true,
@@ -151,7 +151,7 @@ module.exports = function(grunt) {
       }
     },
     jasmine: {
-      src: ['js/*.js', '../../js/*.js', '!dist/init.min.js'],
+      src: ['js/*.js', '../../js/*.js', '!dist/js/init.min.js'],
       options: {
         specs: ['js/tests/*tests.js', '../../js/tests/*tests.js'],
         vendor: ['https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js']
@@ -161,7 +161,7 @@ module.exports = function(grunt) {
       target: ['css/style.css', 'js/css.js']
     },
     robFix: {
-      target: ['dist/init.min.js']
+      target: ['dist/js/init.min.js']
     },
     inlineCSS: {
       target: ['dist/critical.css']
@@ -436,7 +436,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-criticalcss');
 
   // Compile sass and handlebars on the fly.
-  grunt.registerTask('default', ['sass:dev', 'handlebars', 'BundleVariation', 'KeepConfigAligned',  'KeepDataAligned', 'browserSync', 'watch']);
+  grunt.registerTask('default', ['sass:dev', 'handlebars', 'browserSync', 'watch']);
 
    // Unit tests.
   grunt.registerTask('test', ['jasmine']);
