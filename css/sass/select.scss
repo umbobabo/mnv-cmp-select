@@ -38,14 +38,24 @@ $prefix: 'mnv-ec-select';
     overflow: hidden;
     box-sizing: border-box;
     height: $mnv-ec-select-bar-height;
-    padding-right: $mnv-ec-select-padding + $mnv-ec-select-close-btn-w;
+    padding-right: $mnv-ec-select-padding/2 + $mnv-ec-select-close-btn-w;
     li {
+      &:first-child {
+        background-image: $mnv-ec-select-li-bg-image;
+        background-repeat: no-repeat;
+        background-position: 100%;
+        background-size: 60px;
+        padding-right: 60px;
+      }
       width: 100%;
       background: $mnv-ec-select-result-item-bg;
       padding: $mnv-ec-select-padding+2 $mnv-ec-select-padding;
       border-bottom: solid 1px $mnv-ec-select-result-item-border-bottom-color;
       box-sizing: border-box;
       height: $mnv-ec-select-bar-height+1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
       &:hover {
         background-color: $mnv-ec-select-result-item-hover-bg;
         color: $mnv-ec-select-result-item-hover-color;
