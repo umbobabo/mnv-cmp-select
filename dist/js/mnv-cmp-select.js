@@ -1,6 +1,6 @@
 function ecSelect(config){
   'use strict';
-  var widget, inputField, resultsList, widgetClassName = "mnv-ec-select", search, trigger, hideResults, bindEvents, container, hideOnLeave, log, list, searchProperty, prefix, timer, hideTimer, reset, hasClass, resetForm;
+  var list, _currentList, widgetClassName = "mnv-ec-select", drawList, reorderSelect, trigger, bindEvents, container, log, list, prefix, reset, resetSelect;
   prefix = widgetClassName + "-";
   this.init = function(config) {
     if(config.list instanceof Array === false) {
@@ -11,70 +11,40 @@ function ecSelect(config){
       log("list shouldn't be empty");
       return false;
     }
-    if(config.searchProperty === undefined) {
-      log("Provide a searchProperty");
-      return false;
-    }
-    if(config.searchProperty === undefined) {
-      log("Provide a searchProperty");
-      return false;
-    }
     container = document.querySelectorAll('.' + widgetClassName);
     if(container.length===0){
       log('Unable to find a widget with class ' + widgetClassName);
       return false;
     }
-    if(config.caseInsensitive === undefined){
-      config.caseInsensitive = true;
-    }
     container = container[0];
-    list = config.list;
-    searchProperty = config.searchProperty;
-    hideOnLeave = config.hideOnLeave || false;
-    inputField = document.createElement('input');
-    inputField.className = prefix + "input";
-    inputField.setAttribute('placeholder', config.placeholder );
     reset = document.createElement('button');
     reset.className = prefix + "reset search";
-    reset.innerText = '';
-    resultsList = document.createElement('ul');
-    resultsList.className = prefix + "list";
-    resultsList.style.display = 'block';
-    container.appendChild(inputField);
+    // textContent is required for FF
+    (document.all) ? (reset.innerText = 'Reset') : (reset.textContent = 'Reset');
+    list = document.createElement('ul');
+    list.className = prefix + "list";
+    list.style.display = 'block';
+    container.appendChild(list);
     container.appendChild(reset);
-    container.appendChild(resultsList);
+    // Create items list
+    _currentList = [].concat(config.list);
+    drawList();
     bindEvents();
   };
 
-  search = function(str){
-    var results, items;
-    log('Starting search');
-    resultsList.style.display = 'block';
-    resultsList.innerHTML = '';
-    if(str.trim()===""){
-      results = [];
-    } else {
-      var re = new RegExp(str, (config.caseInsensitive) ? 'i' : null );
-      results = list.filter(function(value){
-        return value[searchProperty].match(re);
+  drawList = function(){
+    list.innerHTML = '';
+    _currentList.map(function(obj, i){
+      var item = document.createElement('li');
+      item.innerHTML = obj.label;
+      item.addEventListener('click', function(){
+        trigger.call(container, 'selectChange', obj);
+        reorderSelect(i);
+        drawList();
       });
-    }
-    if(results.length===0){
-      resultsList.innerHTML = '<li>No results</li>';
-    } else {
-      items = [];
-      results.map(function(obj){
-        var item = document.createElement('li');
-        item.innerHTML = obj[searchProperty];
-        item.addEventListener('click', function(){
-          inputField.value = obj[searchProperty];
-          trigger.call(container, 'resultSelected', obj);
-          hideResults(false);
-        });
-        resultsList.appendChild(item);
-      });
-    }
-  };
+      list.appendChild(item);
+    });
+  }
 
   trigger = function(ev, data){
     var myEvent;
@@ -105,53 +75,31 @@ function ecSelect(config){
     }
   };
 
-  hideResults = function(resetInput){
-    if(resetInput===true){
-      resetForm();
+  resetSelect = function(){
+    _currentList = [].concat(config.list);
+    drawList();
+  };
+
+  reorderSelect = function(i){
+    _currentList = _currentList.move(i,0);
+    drawList();
+  }
+
+  Array.prototype.move = function (old_index, new_index) {
+    if (new_index >= this.length) {
+        var k = new_index - this.length;
+        while ((k--) + 1) {
+            this.push(undefined);
+        }
     }
-    resultsList.innerHTML = "";
-    resultsList.style.display = 'none';
-  };
-
-  hasClass = function(el, className){
-    return (el.classList) ? el.classList.contains(className) : new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
-  };
-
-  resetForm = function(){
-    inputField.value = '';
-    reset.className = prefix + "reset search";
-    trigger.call(container, 'fieldReset');
+    this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+    return this; // for testing purposes
   };
 
   bindEvents = function(){
-    inputField.addEventListener('keyup', function(){
-      var str =  this.value.trim();
-      if(hasClass(reset, 'search')){
-        reset.className = prefix + "reset close";
-      }
-      clearTimeout(timer);
-      timer = window.setTimeout(function() {
-        search(str);
-      }, 500);
-    });
-    inputField.addEventListener('focus', function(){
-      resetForm();
-    });
-    if(hideOnLeave){
-      resultsList.addEventListener('mouseleave', function(){
-        clearTimeout(hideTimer);
-        hideTimer = window.setTimeout(function() {
-          hideResults();
-        }, 1000);
-      });
-    }
     reset.addEventListener('click', function(){
-      if(hasClass(this, "search")){
-        // Focuse on magnifier click
-        inputField.focus();
-      } else {
-        hideResults(true);
-      }
+      resetSelect();
+      trigger.call(container, 'selectReset', _currentList);
     });
   };
 
