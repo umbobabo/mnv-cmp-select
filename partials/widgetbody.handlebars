@@ -1,0 +1,27 @@
+<div data-mnv="ecSelect" class="mnv-widget mnv-ec-select" style="max-width: 80%"></div>
+<script>
+function ready(fn) {
+  if (document.readyState != 'loading'){
+    fn();
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
+}
+
+ready(function(){
+  var list , config, selectCmp;
+  // Injecting initial data
+  list = [{ label: 'First', value: 1, id: 'First' }, { label: 'Second very long label with lot of text', value: 1, id: 'Second' }, { label: 'Second ver', value: 1, id: 'Third' }];
+  config = {
+    list: list
+  };
+  // Create the liveSearch obj
+  selectCmp = new ecSelect(config);
+  // This code simulate a listener to the selection of a suggestion
+  document.getElementsByClassName("mnv-ec-select")[0].addEventListener('selectChange', function(e){
+    console.log("Received" + JSON.stringify(e.detail));
+  });
+});
+
+</script>
+

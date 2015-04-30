@@ -1,0 +1,61 @@
+$prefix: 'mnv-ec-select';
+
+.#{$prefix} {
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  min-height: $mnv-ec-select-bar-height;
+  font-family: $mnv-ec-select-font-family;
+  font-size: $mnv-ec-select-result-font-size;
+  line-height: $mnv-ec-select-result-line-height;
+  color: $mnv-ec-select-result-item-color;
+  .#{$prefix}-reset {
+    color: $mnv-ec-select-result-item-color;
+    background: $mnv-ec-select-close-btn-bg;
+    border: none;
+    width: $mnv-ec-select-close-btn-w;
+    height: $mnv-ec-select-close-btn-w;
+    padding: $mnv-ec-select-padding;
+    outline: none;
+    position: absolute;
+    height: 100%;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    padding: $mnv-ec-select-padding;
+    outline: none;
+    font-family: $mnv-ec-select-font-family;
+    font-size: $mnv-ec-select-result-font-size;
+    &:hover {
+      background-color: $mnv-ec-select-close-btn-hover-bg;
+      cursor: pointer;
+      color: $mnv-ec-select-result-item-hover-color;
+    }
+  }
+  .#{$prefix}-list {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    height: $mnv-ec-select-bar-height;
+    padding-right: $mnv-ec-select-padding + $mnv-ec-select-close-btn-w;
+    li {
+      width: 100%;
+      background: $mnv-ec-select-result-item-bg;
+      padding: $mnv-ec-select-padding+2 $mnv-ec-select-padding;
+      border-bottom: solid 1px $mnv-ec-select-result-item-border-bottom-color;
+      box-sizing: border-box;
+      height: $mnv-ec-select-bar-height+1;
+      &:hover {
+        background-color: $mnv-ec-select-result-item-hover-bg;
+        color: $mnv-ec-select-result-item-hover-color;
+        cursor: pointer;
+      }
+    }
+    &:hover {
+      position: absolute;
+      overflow: visible;
+      height: auto;
+    }
+  }
+}
