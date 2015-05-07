@@ -58,6 +58,7 @@ $prefix: 'mnv-ec-select';
       white-space: nowrap;
       text-overflow: ellipsis;
       line-height: 28px;
+      padding-left: 10px;
       &:hover {
         background-color: $mnv-ec-select-result-item-hover-bg;
         color: $mnv-ec-select-result-item-hover-color;
