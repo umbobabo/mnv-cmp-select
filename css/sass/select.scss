@@ -41,6 +41,7 @@ $prefix: 'mnv-ec-select';
     padding-right: $mnv-ec-select-padding/2 + $mnv-ec-select-close-btn-w;
     li {
       &:first-child {
+        background-color: $mnv-ec-select-result-item-hover-bg;
         background-image: $mnv-ec-select-li-bg-image;
         background-repeat: no-repeat;
         background-position: 100%;
@@ -56,6 +57,7 @@ $prefix: 'mnv-ec-select';
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      line-height: 28px;
       &:hover {
         background-color: $mnv-ec-select-result-item-hover-bg;
         color: $mnv-ec-select-result-item-hover-color;
