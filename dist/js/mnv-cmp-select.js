@@ -98,7 +98,7 @@ function ecSelect(config){
 
   bindEvents = function(){
     reset.addEventListener('click', function(){
-      //resetSelect();
+      resetSelect();
       trigger.call(container, 'selectReset', _currentList);
     });
   };

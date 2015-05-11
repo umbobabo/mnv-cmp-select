@@ -1,12 +1,8 @@
 module.exports = function(grunt) {
   var fs = require('fs');
-  //Capturing the name project folder
-  var re = /^(.+\/)(.{0,})/;
-  var projectFolder = re.exec(__dirname)[2];
   // Project configuration.
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
-    bundle: grunt.file.readJSON('config.json').bundle,
+    name: grunt.file.readJSON('bower.json').name,
     useminPrepare: {
       html: 'partials/widgethead.handlebars'
     },
@@ -34,32 +30,12 @@ module.exports = function(grunt) {
       handlebars: {
         files: ['js/tpl/handlebars/*.handlebars'],
         tasks: ['handlebars']
-      },
-      KeepConfigAligned: {
-        files: ['config.json','package.json'],
-        tasks: ['KeepConfigAligned']
-      },
-      KeepDataAligned: {
-        files: ['data/data.json'],
-        tasks: ['KeepDataAligned']
-      },
-      BundleVariation: {
-        files: ['config.json'],
-        tasks: ['BundleVariation']
-      }       
+      }
     },
     concat: {
       dist: {
-        src: ['js/css.js', 'dist/js/init.min.js'],
-        dest: 'dist/js/init.min.js',
-      },
-      template: {
-        src: ['css/inlineStyle.html', 'js/tpl/handlebars/*.*'],
-        dest: 'dist/<%= pkg.ns.folder %>-complete.handlebars',
-      },
-      css: {
-        src: ['../../pattern-library/css/components.css', '../../pattern-library/css/app.css', '../../pattern-library/css/fonts.css', '../../pattern-library/css/social-icons.css', 'css/style.css'],
-        dest: 'tmp/concat-critical.css',
+        src: ['js/css.js', 'dist/js/<%= name %>.min.js'],
+        dest: 'dist/js/<%= name %>.min.js',
       }
     },
     uglify: {
@@ -92,7 +68,7 @@ module.exports = function(grunt) {
     browserSync: {
         dev: {
             bsFiles: {
-              src : ['css/style.css', 'js/*.*', 'public/*.*', 'partials/*.*', 'js/tpl/template.js', 'data/inbundle.js', 'sites/default/files/external/minerva_data/<%= pkg.ns.folder %>/<%= pkg.version %>/*.*' ]
+              src : ['css/style.css', 'js/*.*', 'public/*.*', 'partials/*.*' ]
             },
             options: {
               watchTask: true // < VERY important
@@ -100,7 +76,6 @@ module.exports = function(grunt) {
         }
     },
     jshint: {
-      //files: ['js/**/*.js', '!dist/js/init.min.js', '!js/tests/*.js', '!js/tpl/template.js'],
       files: ['js/init.js'],
       options: {
         camelcase: true,
@@ -151,7 +126,7 @@ module.exports = function(grunt) {
       }
     },
     jasmine: {
-      src: ['js/*.js', '../../js/*.js', '!dist/js/init.min.js'],
+      src: ['js/*.js', '../../js/*.js', '!dist/js/<%= name %>.min.js'],
       options: {
         specs: ['js/tests/*tests.js', '../../js/tests/*tests.js'],
         vendor: ['https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js']
@@ -161,36 +136,11 @@ module.exports = function(grunt) {
       target: ['css/style.css', 'js/css.js']
     },
     robFix: {
-      target: ['dist/js/init.min.js']
+      target: ['dist/js/<%= name %>.min.js']
     },
-    inlineCSS: {
-      target: ['dist/critical.css']
-    },
-    KeepConfigAligned: {
-      //TODO review this part with dest and src
-      target: ['config.json', 'package.json', 'js/config.js']
-    },
-    KeepDataAligned: {
-      //TODO review this part with dest and src
-      //TODO create folder URL dynamically
-      target: ['data/data.json', 'sites/default/files/external/minerva_data/<%= pkg.ns.folder %>/<%= bundle.assets.version %>/data.json' ,'sites/default/files/external/minerva_data/<%= pkg.ns.folder %>/<%= bundle.assets.version %>/data-jsonp.json', 'data/inbundle.js']
-    },
-    BundleVariation: {
-      target: ['partials/widgethead.handlebars']
-    },
-    criticalcss: {
-        custom: {
-            options: {
-                url: "http://localhost:3000/projects/" + projectFolder + "/critical.html",
-                width: 1200,
-                height: 3000,
-                outputfile: "dist/critical.css",
-                filename: "tmp/concat-critical.css", // Using path.resolve( path.join( ... ) ) is a good idea here
-                buffer: 800*2024,
-                ignoreConsole: true
-            }
-        }
-    },
+    CopyInit: {
+      target: ['js/init.js', 'dist/js/<%= name %>.js']
+    }
   });
 
   // Convert css into js
@@ -213,6 +163,29 @@ module.exports = function(grunt) {
     return true;
   });
 
+  grunt.registerMultiTask('CopyInit', 'Copy init.js to a specific folder', function() {
+      var dataFile = this.data[0];
+      var targetFiles = this.data[1];
+
+      grunt.log.writeln("Starting file reading " + dataFile + "...");
+      try {
+        var data = fs.readFileSync(dataFile).toString();
+      } catch (err) {
+        grunt.log.writeln("An error occured on reading the file " + dataFile + ": " + err);
+        return false;
+      }
+
+      grunt.log.writeln("Try writing " + targetFiles);
+      try {
+        fs.writeFileSync(targetFiles, data);
+        grunt.log.writeln("Writed " + targetFiles);
+      } catch (err) {
+        grunt.log.writeln("An error occured on saving file: " + targetFiles + " " + err);
+        return false;
+      }
+
+      return true;
+    });
   // Rob fix
   // This check prevent a problem verified on IE with the minified file
   // Check for this string "c.styleSheet?c.styleSheet.cssText=d.toString():c.appendChild(d)," on the init.min.js
@@ -227,10 +200,10 @@ module.exports = function(grunt) {
       grunt.log.writeln("An error occured on reading the file " + target + ": " + err);
       return false;
     }
-    
+
     grunt.log.writeln("File readed...");
     //grunt.log.writeln(initMin);
-    
+
     var before = initMin;
     initMin.replace('c.styleSheet?c.styleSheet.cssText=d.toString():c.appendChild(d),', 'c.styleSheet?c.styleSheet.cssText=a:c.appendChild(d),');
     if(initMin===before){
@@ -244,181 +217,7 @@ module.exports = function(grunt) {
           return false;
       }
       grunt.log.writeln("Rob Fix applied with success.");
-    }    
-    return true;
-  });
-
-  // Inline CSS
-  // Put the css style inside a tag <style><style>
-  grunt.registerMultiTask('inlineCSS', 'Creating an inline style tag with css insider', function() {
-    var target = this.data[0];
-
-    grunt.log.writeln("Starting file reading " + target + "...");
-    try {
-      var initMin = fs.readFileSync(target).toString();
-    } catch (err) {
-      grunt.log.writeln("An error occured on reading the file " + target + ": " + err);
-      return false;
     }
-    
-    grunt.log.writeln("File readed...");
-    //grunt.log.writeln(initMin);
-    
-    try {
-        fs.writeFileSync('css/inlineStyle.html', '<style>' + initMin + '</style>');
-    } catch (err) {
-        grunt.log.writeln("An error occured on saving file:" + err);
-        return false;
-    }  
-    return true;
-  });
-
-  // KeepConfigAligned
-  // Keep aligned config.js file with config.json and package.json
-  grunt.registerMultiTask('KeepConfigAligned', 'Recreating data derivated files', function() {
-    var configFile = this.data[0];
-    var minervaFile = this.data[1];
-    var target = this.data[2];
-
-    grunt.log.writeln("Starting file reading " + target + "...");
-    try {
-      var targetFile = fs.readFileSync(target).toString();
-    } catch (err) {
-      grunt.log.writeln("An error occured on reading the file " + target + ": " + err);
-      return false;
-    }
-
-    grunt.log.writeln("Starting file reading " + configFile + "...");
-    try {
-      var config = fs.readFileSync(configFile).toString();
-    } catch (err) {
-      grunt.log.writeln("An error occured on reading the file " + configFile + ": " + err);
-      return false;
-    }
-
-    grunt.log.writeln("Starting file reading " + minervaFile + "...");
-    try {
-      var minerva = fs.readFileSync(minervaFile).toString();
-    } catch (err) {
-      grunt.log.writeln("An error occured on reading the file " + minervaFile + ": " + err);
-      return false;
-    }
-    
-    grunt.log.writeln("Files readed...");
-    var match = targetFile.match(/^var.{0,}=/i)[0];
-    var newJSConfig = match + ' {\n "config" : ' + config + ',\n "minerva" :' + minerva + ' };';
-    
-    try {
-        grunt.log.writeln("New config.js created.");
-        fs.writeFileSync(target, newJSConfig);
-    } catch (err) {
-        grunt.log.writeln("An error occured on saving file:" + target + " " + err);
-        return false;
-    }  
-    return true;
-  });
-
-  // KeepDataAligned
-  // Keep aligned different version of data with the data/data.json files
-  // Different data are needed to test different data-provider
-  // json --> 'sites/default/files/external/minerva_data/<%= pkg.ns.folder %>/<%= bundle.assets.version %>/data.json'
-  // jsonp --> 'sites/default/files/external/minerva_data/<%= pkg.ns.folder %>/<%= bundle.assets.version %>/data-jsonp.json'
-  // inbundle --> 'data/inbundle.js'
-  grunt.registerMultiTask('KeepDataAligned', 'Recreating data derivated files', function() {
-    var dataFile = this.data[0];
-    this.data.shift();
-    var targetFiles = this.data;
-    
-    grunt.log.writeln("Starting file reading " + dataFile + "...");
-    try {
-      var data = fs.readFileSync(dataFile).toString();
-    } catch (err) {
-      grunt.log.writeln("An error occured on reading the file " + dataFile + ": " + err);
-      return false;
-    }
-
-    for (var i = 0; i < targetFiles.length; i++) {
-      var file = targetFiles[i];
-      console.log('Working on ' + file);
-      var newData;
-      // TODO Review this part
-      switch(i){
-        //json
-        case 0:
-          newData = data;
-        break;
-        //jsonp
-        case 1:
-          grunt.log.writeln("Starting file reading " + file + "...");
-          //Reading the name of the callback in the jsonp file
-          try {
-            var jsonpFile = fs.readFileSync(file).toString();
-          } catch (err) {
-            grunt.log.writeln("An error occured on reading the file " + file + ": " + err);
-            return false;
-          }
-          var match = jsonpFile.match(/.{0,}\(/i)[0];
-          newData = match + data + ');';
-        break;
-        //inbundle
-        case 2:
-          grunt.log.writeln("Starting file reading " + file + "...");
-          //Reading the name of the callback in the jsonp file
-          try {
-            var inbundleFile = fs.readFileSync(file).toString();
-          } catch (err) {
-            grunt.log.writeln("An error occured on reading the file " + file + ": " + err);
-            return false;
-          }
-          var match = inbundleFile.match(/^var.{0,}=/i)[0];
-          newData = match + data + ';';
-        break;
-      }      
-
-      grunt.log.writeln("Try writing " + file);
-      try {
-        fs.writeFileSync(file, newData);
-        grunt.log.writeln("Writed " + file);
-      } catch (err) {
-          grunt.log.writeln("An error occured on saving file:" + file + " " + err);
-          return false;
-      } 
-    };
-
-    return true;
-  });
-
-  // Change bundle composition if a config has changed
-  grunt.registerMultiTask('BundleVariation', 'Change bundle elements', function() {
-    var bundlePipe = this.data[0];
-    var provider =  grunt.file.readJSON('config.json').bundle.data.provider;
-
-    //Reading the bundle pipeline from head
-    try {
-      var bundle = fs.readFileSync(bundlePipe).toString();
-      bundle = bundle.replace('<script src="data/inbundle.js"></script>\n','').replace('<script src="data/inbundle.js"></script>','');
-      // TODO Review this part
-      console.log(provider);
-      switch(provider){
-        //inbundle
-        case 'inbundle':
-          grunt.log.writeln("Changing in inbundle ...");
-          bundle = bundle.replace('<script src="js/init.js"></script>', '<script src="data/inbundle.js"></script>\n<script src="js/init.js"></script>');
-        break;
-      }
-      grunt.log.writeln("Try writing " + bundlePipe);
-      try {
-        fs.writeFileSync(bundlePipe, bundle);
-        grunt.log.writeln("Writed " + bundlePipe);
-      } catch (err) {
-          grunt.log.writeln("An error occured on saving file:" + bundlePipe + " " + err);
-          return false;
-      }
-    } catch (err) {
-      grunt.log.writeln("An error occured on reading the file " + bundlePipe + ": " + err);
-      return false;
-    }
-
     return true;
   });
 
@@ -433,7 +232,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-sass');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-usemin');
-  grunt.loadNpmTasks('grunt-criticalcss');
 
   // Compile sass and handlebars on the fly.
   grunt.registerTask('default', ['sass:dev', 'handlebars', 'browserSync', 'watch']);
@@ -449,9 +247,6 @@ module.exports = function(grunt) {
   grunt.registerTask('git', ['shell', 'githooks']);
 
   // Run this task when the code is ready for production.
-  grunt.registerTask('production', ['sass:dist',  'csstojs', 'useminPrepare', 'concat', 'concat:dist', 'uglify', 'robFix']);
-  //'criticalcss:custom',
-  grunt.registerTask('template', [ 'inlineCSS', 'concat:template']);
-  //Get the critical css for the widget
-  grunt.registerTask('csscritical', ['concat:css', 'criticalcss:custom']);
+  grunt.registerTask('production', ['sass:dist',  'csstojs', 'useminPrepare', 'concat', 'concat:dist', 'uglify', 'robFix', 'CopyInit']);
+
 };

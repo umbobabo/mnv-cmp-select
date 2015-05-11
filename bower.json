@@ -13,17 +13,13 @@
   ],
   "license": "MIT",
   "ignore": [
-    "data/",
     "js/",
     "minerva-ws/",
     "node_modules/",
     "partials/",
-    "sites/",
-    "tmp/",
     "views/",
     ".gitignore",
     "bower.json",
-    "config.json",
     "Gruntfile.js",
     "minerva-ws.js",
     "package.json"

@@ -1,4 +1,4 @@
-var express = require("express"), exphbs = require('express-handlebars'), app, hbs, port = 3000, listenOnFreePort, grunt = require('grunt');
+var express = require("express"), exphbs = require('express-handlebars'), app, hbs, port = 3000, listenOnFreePort, grunt = require('grunt'), projectName, fs = require('fs');
 
 app = express();
 hbs =  exphbs.create({
@@ -8,15 +8,20 @@ app.engine('handlebars', hbs.engine);
 hbs.partialsDir = ['views/partials/', 'partials/'];
 app.set('view engine', 'handlebars');
 
+projectName = JSON.parse(fs.readFileSync('bower.json')).name;
+console.log(projectName);
+
 app.get('/', function (req, res) {
   res.render('widget', {
-      layout: 'development'
+      layout: 'development',
+      projectName: projectName
     });
 });
 
 app.get(/testinitmin.html/gi, function (req, res) {
     res.render('widget', {
-      layout: 'testinitmin'
+      layout: 'testinitmin',
+      projectName: projectName
     });
 });
 
